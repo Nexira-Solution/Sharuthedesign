@@ -16,7 +16,7 @@ const fields = [
     ],
   },
   { k: 'category', label: 'Garment Category / Function', type: 'select', optionsFrom: '/api/categories', optional: true },
-  { k: 'price', label: 'Price / Estimate (e.g. ₹3,200 or ₹28,000 combo)' },
+  { k: 'price', label: 'Price / Estimate (Optional - e.g. ₹3,200 or ₹28,000 combo)', optional: true },
   { k: 'images', label: 'Photos (First photo will be the main display cover)', type: 'images', folder: 'products' },
   { k: 'description', label: 'Bespoke Design Description', type: 'textarea' },
   { k: 'fabric', label: 'Fabric Composition (e.g. Pure Mulberry Silk, Egyptian 120s Cotton)' },
@@ -60,13 +60,12 @@ export default function ProductsPage() {
       defaults={{ audience: 'men', active: true, images: [], colors: [], groupMatching: false, featured: false }}
       row={(p) => {
         const isFam = isFamilyAudience(p.audience) || p.groupMatching;
+        const catName = p.category?.name || (typeof p.category === 'string' ? p.category : '');
         return {
           thumb: p.images?.[0],
           title: p.name,
           badge: isFam ? '👨‍👩‍👧‍👦 Family / Group Combo' : p.featured ? '⭐ Featured' : null,
-          meta: `${audienceLabel(p.audience)}${p.category?.name ? ` • ${p.category.name}` : ''}${
-            p.price ? ` • ${p.price}` : ''
-          }${p.fabric ? ` • Fabric: ${p.fabric}` : ''}${p.active ? '' : ' • (Hidden)'}`,
+          meta: catName ? catName : audienceLabel(p.audience),
         };
       }}
     />

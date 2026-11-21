@@ -19,9 +19,9 @@ export default function Footer({ s = {} }) {
           <Link href="/collections?audience=kids">Kids</Link>
           <Link href="/collections?audience=family">Family & Group Combos</Link>
           <Link href="/measurements">Send Measurements</Link>
-          <Link href="/track" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {/* <Link href="/track" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <Search size={13} /> Track Order Status
-          </Link>
+          </Link> */}
         </div>
         <div>
           <h4>Visit Atelier</h4>

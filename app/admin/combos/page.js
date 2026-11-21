@@ -13,10 +13,12 @@ import {
   Loader2,
   Users,
   ExternalLink,
+  ImagePlus,
 } from 'lucide-react';
 import Img from '@/components/Img';
 import { api } from '@/lib/api';
 import { isFamilyAudience } from '@/lib/utils';
+import { uploadFile } from '@/components/admin/Fields';
 
 export default function FamilyCombosAdmin() {
   const [items, setItems] = useState([]);
@@ -32,6 +34,20 @@ export default function FamilyCombosAdmin() {
   // Custom Delete Confirmation Card State
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [uploadingPieceIdx, setUploadingPieceIdx] = useState(null);
+
+  const handlePieceImageUpload = async (idx, file) => {
+    if (!file) return;
+    try {
+      setUploadingPieceIdx(idx);
+      const url = await uploadFile(file, 'combos');
+      handlePieceChange(idx, 'image', url);
+    } catch (err) {
+      alert(`Failed to upload dress image: ${err.message}`);
+    } finally {
+      setUploadingPieceIdx(null);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -61,7 +77,7 @@ export default function FamilyCombosAdmin() {
         audience: 'family',
         groupMatching: true,
         category: categories.find((c) => isFamilyAudience(c.audience))?._id || '',
-        price: '₹22,000 combo',
+        price: '',
         fabric: 'Pure Mulberry Silk with Harmonized Zari',
         colors: ['Maragatham Emerald & Gold', 'Ivory & Crimson'],
         description: 'Complete family coordinated celebration set tailored from matching silk dye lots.',
@@ -69,10 +85,10 @@ export default function FamilyCombosAdmin() {
         featured: true,
         active: true,
         comboPieces: [
-          { label: 'Father / Groom', garmentType: 'Silk Kurta / Sherwani', audience: 'men' },
-          { label: 'Mother / Bride', garmentType: 'Designer Blouse / Lehenga', audience: 'women' },
-          { label: 'Son', garmentType: 'Boys Silk Kurta Dhoti', audience: 'kids' },
-          { label: 'Daughter', garmentType: 'Girls Pattu Pavadai', audience: 'kids' },
+          { label: 'Father / Groom', garmentType: 'Silk Kurta / Sherwani', audience: 'men', image: '' },
+          { label: 'Mother / Bride', garmentType: 'Designer Blouse / Lehenga', audience: 'women', image: '' },
+          { label: 'Son', garmentType: 'Boys Silk Kurta Dhoti', audience: 'kids', image: '' },
+          { label: 'Daughter', garmentType: 'Girls Pattu Pavadai', audience: 'kids', image: '' },
         ],
       });
     } else {
@@ -105,7 +121,7 @@ export default function FamilyCombosAdmin() {
   const addPiece = () => {
     setForm({
       ...form,
-      comboPieces: [...(form.comboPieces || []), { label: 'New Member', garmentType: 'Kurta / Blouse', audience: 'men' }],
+      comboPieces: [...(form.comboPieces || []), { label: 'New Member', garmentType: 'Kurta / Blouse', audience: 'men', image: '' }],
     });
   };
 
@@ -309,6 +325,67 @@ export default function FamilyCombosAdmin() {
                     <option value="women">Women</option>
                     <option value="kids">Kids</option>
                   </select>
+
+                  {/* Dress Image Upload Option */}
+                  <div className="piece-img-box">
+                    {piece.image ? (
+                      <div className="piece-img-thumb-wrap">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={piece.image}
+                          alt={piece.label || 'Dress'}
+                          className="piece-thumb-preview"
+                        />
+                        <label className="piece-change-lbl" title="Change dress image">
+                          Change
+                          <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                handlePieceImageUpload(idx, e.target.files[0]);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="piece-img-remove-btn"
+                          onClick={() => handlePieceChange(idx, 'image', '')}
+                          title="Remove dress image"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="piece-upload-trigger">
+                        {uploadingPieceIdx === idx ? (
+                          <>
+                            <Loader2 size={13} className="spin" /> Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <ImagePlus size={14} /> Upload Dress Photo
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          disabled={uploadingPieceIdx === idx}
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              handlePieceImageUpload(idx, e.target.files[0]);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+
                   <button
                     type="button"
                     className="btn danger sm piece-del-btn"
@@ -462,37 +539,24 @@ export default function FamilyCombosAdmin() {
                   </span>
                 </div>
                 <div className="combo-card-main">
-                  <h3>{item.name}</h3>
-                  {item.price && <div className="combo-price-tag">{item.price}</div>}
-                  {item.fabric && <p className="combo-fabric">🧵 {item.fabric}</p>}
-                  <p className="combo-desc">{item.description}</p>
-                </div>
-              </div>
-
-              {/* Member Outfits */}
-              <div className="combo-pieces-panel">
-                <h4>Coordinated Outfits:</h4>
-                <div className="pieces-chips-list">
-                  {item.comboPieces?.length ? (
-                    item.comboPieces.map((p, idx) => (
-                      <span key={idx} className="piece-chip">
-                        <b>{p.label}:</b> {p.garmentType}
+                  <div className="combo-status-pills">
+                    <span className={`combo-status-pill ${item.active ? 'live' : 'draft'}`}>
+                      <span className="dot" /> {item.active ? 'Visible' : 'Hidden'}
+                    </span>
+                    {item.featured && (
+                      <span className="combo-status-pill featured">
+                        ⭐ Featured
                       </span>
-                    ))
-                  ) : (
-                    <span className="piece-chip">Custom member matching pieces</span>
-                  )}
+                    )}
+                  </div>
+                  <h3>{item.name}</h3>
                 </div>
               </div>
 
               <div className="combo-card-footer">
-                <div className="meta-info">
-                  <span className="badge">{item.active ? 'Visible' : 'Hidden'}</span>
-                  {item.featured && <span className="badge ok">⭐ Featured</span>}
-                </div>
-                <div className="acts">
+                <div className="acts single-row-acts">
                   <Link href={`/collections/${item.slug}`} target="_blank" className="btn ghost sm">
-                    <ExternalLink size={13} style={{ display: 'inline', marginRight: 3 }} /> Preview
+                    <ExternalLink size={13} style={{ display: 'inline', marginRight: 4 }} /> Preview
                   </Link>
                   <button
                     type="button"
@@ -500,7 +564,7 @@ export default function FamilyCombosAdmin() {
                     onClick={() => openForm(item)}
                     title="Edit combo"
                   >
-                    <Edit2 size={13} style={{ display: 'inline', marginRight: 3 }} /> Edit
+                    <Edit2 size={13} style={{ display: 'inline', marginRight: 4 }} /> Edit
                   </button>
                   <button
                     type="button"
@@ -508,7 +572,7 @@ export default function FamilyCombosAdmin() {
                     onClick={() => setDeleteTarget(item)}
                     title="Delete combo"
                   >
-                    <Trash2 size={13} style={{ display: 'inline', marginRight: 3 }} /> Delete
+                    <Trash2 size={13} style={{ display: 'inline', marginRight: 4 }} /> Delete
                   </button>
                 </div>
               </div>

@@ -81,19 +81,32 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
   const [err, setErr] = useState('');
   const [doneData, setDoneData] = useState(null);
 
-  // Determine stage: 1 = choose audience, 2 = choose category/dress, 3 = step-by-step measure or review
-  const stage = !audience ? 1 : !guide ? 2 : 3;
+  // Stage: 1 = Target Group, 2 = Step-by-Step Measurements, 3 = Review & Submit
+  const stage = !audience || !guide ? 1 : !isReviewing ? 2 : 3;
+
+  const pickAudience = (key) => {
+    setAudience(key);
+    const matched = guides.filter((g) => {
+      if (key === 'family') return g.audience === 'family' || g.audience === 'family-group';
+      return g.audience === key;
+    });
+    const chosenGuide = matched[0] || null;
+    setGuide(chosenGuide);
+    setCurrentStep(0);
+    setValues({});
+    if (chosenGuide?.unit) setUnit(chosenGuide.unit);
+    setIsReviewing(false);
+  };
+
+  useEffect(() => {
+    if (initialAudience && AUD.some((a) => a.key === initialAudience) && !guide && guides.length > 0) {
+      pickAudience(initialAudience);
+    }
+  }, [initialAudience, guides]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [stage, currentStep, isReviewing, doneData]);
-
-  const pickAudience = (key) => {
-    setAudience(key);
-    setGuide(null);
-    setCurrentStep(0);
-    setIsReviewing(false);
-  };
 
   const pickGuide = (g) => {
     setGuide(g);
@@ -216,7 +229,7 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
           Thank you, <strong>{doneData.customerName}</strong>. Your custom measurements for <strong>{doneData.guideTitle}</strong> have been recorded in our master tailoring system.
         </p>
 
-        {/* Real-time Tracking Callout Card */}
+        {/* Real-time Tracking Callout Card (Commented out for future use)
         <div className="tracking-card-callout">
           <div className="track-callout-icon">
             <Search size={24} />
@@ -231,6 +244,7 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
             </Link>
           </div>
         </div>
+        */}
 
         <div className="confirm-specs">
           <h4>Recorded Measurements ({doneData.unit}):</h4>
@@ -287,24 +301,31 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
         <div className="wz-steps" aria-label="Progress">
           <button
             type="button"
-            className={`wz-tab ${stage === 1 ? 'on' : stage > 1 ? 'done' : ''}`}
-            onClick={() => { if (stage > 1) pickAudience(''); }}
+            className={`wz-tab ${stage === 1 ? 'on' : 'done'}`}
+            onClick={() => {
+              if (stage > 1) {
+                setAudience('');
+                setGuide(null);
+                setIsReviewing(false);
+              }
+            }}
           >
             1. Target Group {audience && `(${AUD.find((a) => a.key === audience)?.label})`}
           </button>
           <button
             type="button"
             className={`wz-tab ${stage === 2 ? 'on' : stage > 2 ? 'done' : ''}`}
-            onClick={() => { if (stage > 2) setGuide(null); }}
+            onClick={() => {
+              if (isReviewing) {
+                setIsReviewing(false);
+              }
+            }}
             disabled={stage < 2}
           >
-            2. Dress Category {guide && `(${guide.title})`}
+            2. Step-by-Step Measurements
           </button>
-          <span className={`wz-tab ${stage === 3 && !isReviewing ? 'on' : isReviewing ? 'done' : ''}`}>
-            3. Step-by-Step Measurements
-          </span>
-          <span className={`wz-tab ${isReviewing ? 'on' : ''}`}>
-            4. Review & Submit
+          <span className={`wz-tab ${stage === 3 ? 'on' : ''}`}>
+            3. Review & Submit
           </span>
         </div>
 
@@ -331,7 +352,7 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
           >
             <div className="stage-intro">
               <h2>1. Who are you measuring for?</h2>
-              <p className="lead">Select the group to explore all tailor-made garment categories and picture guides.</p>
+              <p className="lead">Select your group to start step-by-step bespoke measurements.</p>
             </div>
 
             <div className="choice-grid">
@@ -351,8 +372,7 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
                     </div>
                     <div className="txt">
                       <h3>{a.label}</h3>
-                      <p>{a.note}</p>
-                      <span className="choice-cta">Explore categories →</span>
+                      <span className="choice-cta">Measurements →</span>
                     </div>
                   </button>
                 );
@@ -361,61 +381,8 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
           </motion.div>
         )}
 
-        {/* STAGE 2: CHOOSE GARMENT CATEGORY */}
-        {stage === 2 && (
-          <motion.div
-            key="stage-2"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <div className="stage-top-bar">
-              <button className="back-link" onClick={() => setAudience('')}>
-                <ChevronLeft size={16} style={{ display: 'inline', verticalAlign: -2 }} /> Change group ({AUD.find((a) => a.key === audience)?.label})
-              </button>
-              <span className="aud-indicator-pill">
-                Browsing: <strong>{AUD.find((a) => a.key === audience)?.label} Collections</strong>
-              </span>
-            </div>
-
-            <div className="stage-intro">
-              <h2>2. Choose the garment to measure</h2>
-              <p className="lead">
-                Pick the exact outfit type. We will guide you step-by-step through each specific measurement point with reference pictures.
-              </p>
-            </div>
-
-            {audienceGuides.length ? (
-              <div className="choice-grid">
-                {audienceGuides.map((g) => (
-                  <button key={g._id || g.slug} className="choice guide-card" onClick={() => pickGuide(g)}>
-                    <div className="pic">
-                      <Img
-                        src={g.coverImage || g.steps?.find((s) => s.image)?.image || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80'}
-                        alt={g.title}
-                        w={600}
-                      />
-                      <span className="steps-count-badge">📏 {g.steps?.length || 6} steps</span>
-                    </div>
-                    <div className="txt">
-                      <h3>{g.title}</h3>
-                      <p>{g.description || `${g.steps?.length} tailored fit points.`}</p>
-                      <span className="choice-cta">Start Measuring →</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="empty">
-                No guides added for this group yet. Please visit the studio or choose another group.
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* STAGE 3: STEP-BY-STEP MEASUREMENT WALKTHROUGH */}
-        {stage === 3 && !isReviewing && step && (
+        {/* STAGE 2: STEP-BY-STEP MEASUREMENT WALKTHROUGH */}
+        {stage === 2 && step && (
           <motion.div
             key={`step-${currentStep}`}
             initial={{ opacity: 0, x: 20 }}
@@ -424,9 +391,17 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
             transition={{ duration: 0.25 }}
           >
             <div className="stage-top-bar">
-              <button className="back-link" onClick={() => setGuide(null)}>
-                <ChevronLeft size={16} style={{ display: 'inline', verticalAlign: -2 }} /> Change dress ({guide.title})
+              <button
+                className="back-link"
+                onClick={() => {
+                  setAudience('');
+                  setGuide(null);
+                  setIsReviewing(false);
+                }}
+              >
+                <ChevronLeft size={16} style={{ display: 'inline', verticalAlign: -2 }} /> Change group ({AUD.find((a) => a.key === audience)?.label})
               </button>
+
               <div className="unit-toggle" role="group" aria-label="Measurement Unit">
                 <button
                   type="button"
@@ -476,7 +451,7 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
                   tip={step.tip}
                   typicalRange={step.typicalRange}
                   unit={unit}
-                  studioImage={step.image || guide.coverImage}
+                  stepImage={step.image}
                 />
               </div>
 
@@ -573,8 +548,8 @@ export default function MeasureWizard({ guides = [], categories = [], initialAud
           </motion.div>
         )}
 
-        {/* STAGE 4: OVERALL SIZE SUMMARY & SUBMISSION FORM */}
-        {stage === 3 && isReviewing && (
+        {/* STAGE 3: OVERALL SIZE SUMMARY & SUBMISSION FORM */}
+        {stage === 3 && (
           <motion.div
             key="stage-review"
             initial={{ opacity: 0, y: 15 }}

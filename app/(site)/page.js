@@ -4,7 +4,7 @@ import Img from '@/components/Img';
 import Reveal from '@/components/Reveal';
 import Tape from '@/components/Tape';
 import ProductCard from '@/components/ProductCard';
-import { getSettings, getCategories, getProducts } from '@/lib/data';
+import { getSettings, getProducts } from '@/lib/data';
 import { AUDIENCES, digits } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -15,13 +15,6 @@ export const metadata = {
   alternates: { canonical: '/' },
 };
 
-const audienceBlurbs = {
-  men: 'Shirts (Half & Full Hand), Silk Jiffa, Executive Outfits, Suits, Trousers & Tracks',
-  women: 'Designer Saree Blouses, Flared Kurtis, Bridal Lehengas, Salwars & Evening Gowns',
-  kids: 'Boys Traditional Kurta & Suits, Girls Pattu Pavadai & Princess Frocks',
-  family: 'Harmonized Matching Sets for Couples, Father-Son, Mother-Daughter & Whole Family',
-};
-
 const audienceCovers = {
   men: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=700&q=80',
   women: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=700&q=80',
@@ -30,9 +23,8 @@ const audienceCovers = {
 };
 
 export default async function Home() {
-  const [s, cats, featured, all] = await Promise.all([
+  const [s, featured, all] = await Promise.all([
     getSettings(),
-    getCategories(),
     getProducts({ featured: true, limit: 8 }),
     getProducts({ limit: 80 }),
   ]);
@@ -72,30 +64,26 @@ export default async function Home() {
             )}
           </div>
         </div>
-        <div className="container">
+        <div className="container hero-tape-wrap">
           <Tape />
         </div>
       </section>
 
-      {/* Target Audiences Grid */}
+      {/* Target Audiences / Categories Grid */}
       <section className="section">
         <div className="container">
           <div className="section-head">
             <div>
-              <span className="badge ok">EXPLORE BY GROUP</span>
-              <h2>Dressing the Whole Family</h2>
+              <span className="badge ok">EXPLORE</span>
+              <h2>Categories</h2>
             </div>
-            <p className="lead">
-              Select who you are dressing today. Every garment is cut to individual measurements.
-            </p>
           </div>
           <div className="aud-grid">
             {AUDIENCES.map((a) => (
               <Link key={a.key} href={`/collections?audience=${a.key}`} className="aud-tile">
                 <Img src={cover(a.key)} alt={a.label} w={700} />
                 <div>
-                  <h3>{a.label}</h3>
-                  <p>{audienceBlurbs[a.key]}</p>
+                  <h3 style={{ marginBottom: 4 }}>{a.label}</h3>
                   <span className="aud-tile-cta" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                     View Collection <ArrowRight size={14} />
                   </span>
@@ -105,35 +93,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* Garment Categories Grid */}
-      {cats.length > 0 && (
-        <section className="section soft">
-          <div className="container">
-            <div className="section-head">
-              <div>
-                <span className="badge">TAILORED FUNCTIONS</span>
-                <h2>For Every Milestone & Function</h2>
-              </div>
-              <p className="lead">
-                Weddings, temple muhurthams, executive office days, festivals, and coordinated family celebrations.
-              </p>
-            </div>
-            <div className="cat-grid">
-              {cats.slice(0, 12).map((c) => (
-                <Link
-                  key={c._id || c.slug}
-                  href={`/collections?category=${c.slug}`}
-                  className={`cat-tile ${c.image ? '' : 'plain'}`}
-                >
-                  {c.image && <Img src={c.image} alt={c.name} w={600} />}
-                  <span>{c.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Featured Pieces */}
       <section className="section">

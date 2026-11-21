@@ -16,6 +16,9 @@ import {
   Ruler,
   Check,
   Users,
+  Eye,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { digits } from '@/lib/utils';
@@ -40,6 +43,27 @@ export default function SubmissionsMasterPage() {
   const [savingNoteId, setSavingNoteId] = useState(null);
   const [tailorNotesDraft, setTailorNotesDraft] = useState({});
   const [printingDoc, setPrintingDoc] = useState(null);
+  const [expandedIds, setExpandedIds] = useState([]);
+
+  useEffect(() => {
+    const handleAfterPrint = () => setPrintingDoc(null);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => window.removeEventListener('afterprint', handleAfterPrint);
+  }, []);
+
+  const toggleOrder = (id) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllOrders = () => {
+    if (expandedIds.length === filteredItems.length) {
+      setExpandedIds([]);
+    } else {
+      setExpandedIds(filteredItems.map((s) => s._id));
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -202,14 +226,16 @@ export default function SubmissionsMasterPage() {
           <p className="lead">Customers who send sizes from the website will automatically appear in this pipeline.</p>
         </div>
       ) : (
-        <div className="submissions-pipeline-list">
+        <>
+          <div className="submissions-pipeline-list">
           {filteredItems.map((s) => {
             const ticketId = `SHARU-${s._id.slice(-6).toUpperCase()}`;
             const isFam = s.audience === 'family' || s.audience === 'family-group';
+            const isOpen = expandedIds.includes(s._id);
 
             return (
-              <details className="sub tailor-order-card" key={s._id} open={s.status === 'new'}>
-                <summary className="order-summary-bar">
+              <div className={`sub tailor-order-card ${isOpen ? 'expanded' : ''}`} key={s._id}>
+                <div className="order-summary-bar">
                   <div className="summary-left">
                     <span className={`badge ${s.status || 'new'}`}>
                       {s.status === 'verified'
@@ -225,26 +251,49 @@ export default function SubmissionsMasterPage() {
                         : 'NEW'}
                     </span>
                     <strong className="order-customer-name">{s.customerName}</strong>
-                    <span className="order-garment-title">
-                      {isFam && <Users size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: -1 }} />}
-                      {s.guideTitle}
-                    </span>
                     <span className="order-ticket-id">#{ticketId}</span>
                   </div>
 
                   <div className="summary-right">
-                    <span className="order-location" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                    <span className="order-location" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                       <MapPin size={12} />
                       {s.city ? `${s.city}, ` : ''}
                       {s.country || 'India'}
                     </span>
                     <small className="order-timestamp">{new Date(s.createdAt).toLocaleDateString()}</small>
+                    <button
+                      type="button"
+                      className={`btn sm order-view-btn ${isOpen ? 'active' : ''}`}
+                      onClick={() => toggleOrder(s._id)}
+                      aria-expanded={isOpen}
+                    >
+                      {isOpen ? (
+                        <>
+                          <ChevronUp size={13} /> Close
+                        </>
+                      ) : (
+                        <>
+                          <Eye size={13} /> View
+                        </>
+                      )}
+                    </button>
                   </div>
-                </summary>
+                </div>
 
-                <div className="in order-details-body">
+                {isOpen && (
+                  <div className="in order-details-body">
                   {/* Customer Quick Contact & Meta Header */}
                   <div className="order-meta-grid">
+                    <div>
+                      <span className="meta-label">Garment / Outfit:</span>
+                      <p>
+                        <strong style={{ fontSize: '1.02rem' }}>
+                          {isFam && <Users size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: -1 }} />}
+                          {s.guideTitle}
+                        </strong>
+                      </p>
+                    </div>
+
                     <div>
                       <span className="meta-label">Customer Phone / WhatsApp:</span>
                       <p>
@@ -459,11 +508,28 @@ export default function SubmissionsMasterPage() {
                     </div>
                   </div>
                 </div>
-              </details>
-            );
-          })}
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {filteredItems.length > 0 && (
+        <div className="pipeline-list-footer">
+          <button
+            type="button"
+            className="btn ghost sm"
+            onClick={toggleAllOrders}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            <Eye size={14} />
+            {expandedIds.length === filteredItems.length
+              ? 'Collapse All Order Details'
+              : 'View All Details (Expand All)'}
+          </button>
         </div>
       )}
+    </>
+  )}
 
       {/* Hidden Printable Master Tailor Work Sheet (Activated by window.print()) */}
       {printingDoc && (
@@ -500,7 +566,7 @@ export default function SubmissionsMasterPage() {
                 <tr key={i}>
                   <td>{i + 1}</td>
                   <td><strong>{m.label}</strong></td>
-                  <td style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{m.value} {printingDoc.unit}</td>
+                  <td className="print-val" style={{ fontWeight: 'bold' }}>{m.value} {printingDoc.unit}</td>
                   <td style={{ textAlign: 'center' }}>[ &nbsp; ]</td>
                   <td style={{ textAlign: 'center' }}>[ &nbsp; ]</td>
                 </tr>

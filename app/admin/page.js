@@ -4,18 +4,23 @@ import { useEffect, useState } from 'react';
 import {
   Shirt,
   Users,
-  User,
-  Sparkles,
-  Smile,
   Clock,
-  Scissors,
   ClipboardList,
-  Tag,
-  Ruler,
+  Scissors,
   RefreshCw,
   ArrowRight,
+  MapPin,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+
+const STATUS_LABELS = {
+  new: 'NEW',
+  verified: 'VERIFIED',
+  cutting: 'CUTTING',
+  stitching: 'STITCHING',
+  ready: 'READY',
+  completed: 'DELIVERED',
+};
 
 export default function Dashboard() {
   const [s, setS] = useState(null);
@@ -52,16 +57,39 @@ export default function Dashboard() {
 
   const statCards = s
     ? [
-        { label: 'All Products', count: s.products, href: '/admin/products', icon: Shirt },
-        { label: 'Family & Group Combos', count: s.combosCount, href: '/admin/combos', icon: Users, badge: 'Active' },
-        { label: 'Men Pieces', count: s.menCount, href: '/admin/products', icon: User },
-        { label: 'Women Pieces', count: s.womenCount, href: '/admin/products', icon: Sparkles },
-        { label: 'Kids Pieces', count: s.kidsCount, href: '/admin/products', icon: Smile },
-        { label: 'New Measurements', count: s.newSubmissions, href: '/admin/submissions?status=new', icon: Clock, alert: s.newSubmissions > 0 },
-        { label: 'In Tailoring Pipeline', count: s.activeTailoring, href: '/admin/submissions', icon: Scissors },
-        { label: 'Total Orders Recorded', count: s.submissions, href: '/admin/submissions', icon: ClipboardList },
-        { label: 'Categories', count: s.categories, href: '/admin/categories', icon: Tag },
-        { label: 'Measurement Guides', count: s.guides, href: '/admin/guides', icon: Ruler },
+        {
+          label: "Today's Orders",
+          count: s.todayOrders ?? 0,
+          href: '/admin/submissions',
+          icon: Clock,
+          alert: (s.todayOrders || 0) > 0,
+        },
+        {
+          label: 'Total Orders',
+          count: s.submissions ?? 0,
+          href: '/admin/submissions',
+          icon: ClipboardList,
+        },
+        {
+          label: 'In Tailoring Pipeline',
+          count: s.activeTailoring ?? 0,
+          href: '/admin/submissions',
+          icon: Scissors,
+          badge: 'Active',
+        },
+        {
+          label: 'Total Products',
+          count: s.products ?? 0,
+          href: '/admin/products',
+          icon: Shirt,
+        },
+        {
+          label: 'Family & Group Combos',
+          count: s.combosCount ?? 0,
+          href: '/admin/combos',
+          icon: Users,
+          badge: 'Active',
+        },
       ]
     : [];
 
@@ -114,45 +142,6 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Quick Action Hub */}
-      <div className="admin-shortcuts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, margin: '24px 0' }}>
-        <div className="card">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Users size={18} /> Family & Group Matching Sets
-          </h3>
-          <p className="lead" style={{ margin: '8px 0 16px', fontSize: '0.95rem' }}>
-            Manage couple sets, father & son kurtas, mother & daughter matching dresses, and royal full family sets.
-          </p>
-          <Link href="/admin/combos" className="btn sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            Manage Family Combos <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="card">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Scissors size={18} /> Master Tailoring Queue
-          </h3>
-          <p className="lead" style={{ margin: '8px 0 16px', fontSize: '0.95rem' }}>
-            Verify customer sizes, send patterns to the cutting table, and notify clients directly via WhatsApp.
-          </p>
-          <Link href="/admin/submissions" className="btn sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            Open Tailor Pipeline <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="card">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Ruler size={18} /> Measurement Guides
-          </h3>
-          <p className="lead" style={{ margin: '8px 0 16px', fontSize: '0.95rem' }}>
-            Configure step-by-step picture guides and tailor tips for Shirts, Blouses, Kurtas, Suits, and Kids.
-          </p>
-          <Link href="/admin/guides" className="btn sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            Manage Guides <ArrowRight size={14} />
-          </Link>
-        </div>
-      </div>
-
       {/* Recent Incoming Customer Measurements */}
       <div className="card">
         <div className="card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -167,32 +156,29 @@ export default function Dashboard() {
             {s.recent.map((r) => {
               const ticket = `SHARU-${r._id.slice(-6).toUpperCase()}`;
               return (
-                <div
-                  key={r._id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px 0',
-                    borderBottom: '1px solid var(--line)',
-                    flexWrap: 'wrap',
-                    gap: 10,
-                  }}
-                >
-                  <div>
-                    <span className={`badge ${r.status}`}>{r.status}</span>
-                    <strong>{r.customerName}</strong>
-                    <span style={{ color: 'var(--muted)', marginLeft: 8 }}>
-                      • {r.guideTitle} ({r.country || 'India'})
+                <div key={r._id} className="recent-order-row">
+                  <div className="summary-left">
+                    <span className={`badge ${r.status || 'new'}`}>
+                      {STATUS_LABELS[r.status] || 'NEW'}
                     </span>
-                    <span className="order-ticket-id" style={{ marginLeft: 8 }}>#{ticket}</span>
+                    <strong className="order-customer-name">{r.customerName}</strong>
+                    <span className="order-ticket-id">#{ticket}</span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <small style={{ color: 'var(--muted)' }}>
+                  <div className="summary-right">
+                    <span className="order-location" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <MapPin size={12} />
+                      {r.city ? `${r.city}, ` : ''}
+                      {r.country || 'India'}
+                    </span>
+                    <small className="order-timestamp">
                       {new Date(r.createdAt).toLocaleDateString()}
                     </small>
-                    <Link href="/admin/submissions" className="btn ghost sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Link
+                      href="/admin/submissions"
+                      className="btn ghost sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}
+                    >
                       Open Specs <ArrowRight size={13} />
                     </Link>
                   </div>

@@ -3,13 +3,9 @@ import { notFound } from 'next/navigation';
 import {
   Users,
   Ruler,
-  Store,
   MessageCircle,
-  ShieldCheck,
   Sparkles,
   Palette,
-  Scissors,
-  CheckCheck,
 } from 'lucide-react';
 import Gallery from '@/components/Gallery';
 import ProductCard from '@/components/ProductCard';
@@ -66,14 +62,11 @@ export default async function ProductPage({ params }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <section className="pd-section">
         <div className="container pd">
-          {/* Interactive Luxury Gallery */}
+          {/* Minimal Luxury Gallery */}
           <Gallery
             images={p.images}
             alt={p.name}
             productName={p.name}
-            hotspots={p.hotspots || []}
-            colors={p.colors || []}
-            fabric={p.fabric}
           />
 
           <div className="pd-details-col">
@@ -86,13 +79,12 @@ export default async function ProductPage({ params }) {
               )}
               {isCombo && (
                 <span className="badge ok" style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <Users size={13} /> Family & Group Coordinated Set
+                  <Users size={13} /> Family Combo
                 </span>
               )}
             </div>
 
             <h1>{p.name}</h1>
-            {p.price && <div className="pd-price-tag">{p.price} <small>(Bespoke Tailored)</small></div>}
 
             {p.description && <p className="desc">{p.description}</p>}
 
@@ -101,48 +93,48 @@ export default async function ProductPage({ params }) {
               <div className="combo-breakdown-card">
                 <h4>
                   <Users size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -1 }} />
-                  Coordinated Outfits Included in This Set:
+                  Coordinated Outfits Included:
                 </h4>
                 <ul>
                   {p.comboPieces.map((piece, idx) => (
-                    <li key={idx}>
-                      <strong>{piece.label}:</strong> {piece.garmentType} ({piece.audience})
+                    <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {piece.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={piece.image}
+                          alt={piece.label || 'Outfit'}
+                          style={{ width: 34, height: 34, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--line)', flexShrink: 0 }}
+                        />
+                      )}
+                      <span>
+                        <strong>{piece.label}:</strong> {piece.garmentType} ({piece.audience})
+                      </span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            <dl>
-              {p.fabric && (
-                <div>
-                  <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Sparkles size={13} /> Bespoke Fabric
-                  </dt>
-                  <dd>{p.fabric}</dd>
-                </div>
-              )}
-              {p.colors?.length > 0 && (
-                <div>
-                  <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Palette size={13} /> Available Colors
-                  </dt>
-                  <dd>{p.colors.join(', ')}</dd>
-                </div>
-              )}
-              <div>
-                <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Scissors size={13} /> Tailoring Method
-                </dt>
-                <dd>Handcrafted to your individual measurements</dd>
-              </div>
-              <div>
-                <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <CheckCheck size={13} /> Fitting Support
-                </dt>
-                <dd>Studio trial or doorstep video consultation</dd>
-              </div>
-            </dl>
+            {(p.fabric || p.colors?.length > 0) && (
+              <dl>
+                {p.fabric && (
+                  <div>
+                    <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Sparkles size={13} /> Fabric
+                    </dt>
+                    <dd>{p.fabric}</dd>
+                  </div>
+                )}
+                {p.colors?.length > 0 && (
+                  <div>
+                    <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Palette size={13} /> Colors
+                    </dt>
+                    <dd>{p.colors.join(', ')}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
 
             <div className="cta">
               <Link
@@ -150,9 +142,6 @@ export default async function ProductPage({ params }) {
                 className="btn"
               >
                 <Ruler size={16} /> Send Measurements for this Piece
-              </Link>
-              <Link href="/#visit" className="btn ghost">
-                <Store size={15} /> Visit Studio
               </Link>
               {s.whatsapp && (
                 <a
@@ -166,13 +155,6 @@ export default async function ProductPage({ params }) {
                   <MessageCircle size={15} /> Ask on WhatsApp
                 </a>
               )}
-            </div>
-
-            <div className="note" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <ShieldCheck size={16} style={{ flexShrink: 0, marginTop: 2, color: 'var(--ok)' }} />
-              <div>
-                <strong>Bespoke Tailoring Guarantee:</strong> Every piece is hand-cut and stitched by master tailors with custom ease allowances. We offer complimentary fitting adjustments if needed.
-              </div>
             </div>
           </div>
         </div>

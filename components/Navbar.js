@@ -8,7 +8,7 @@ import { Ruler, Menu, X } from 'lucide-react';
 const links = [
   ['/', 'Home'],
   ['/collections', 'Collections'],
-  ['/track', 'Track Order'],
+  // ['/track', 'Track Order'],
   ['/#visit', 'Visit Studio'],
 ];
 

@@ -10,11 +10,15 @@ export async function GET() {
     if (!(await isAdmin())) return unauthorized();
     await dbConnect();
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const [
       products,
       categories,
       guides,
       submissions,
+      todayOrders,
       newSubmissions,
       activeTailoring,
       menCount,
@@ -27,6 +31,7 @@ export async function GET() {
       Category.countDocuments(),
       Guide.countDocuments(),
       Submission.countDocuments(),
+      Submission.countDocuments({ createdAt: { $gte: startOfToday } }),
       Submission.countDocuments({ status: 'new' }),
       Submission.countDocuments({ status: { $in: ['in-progress', 'cutting', 'stitching', 'verified'] } }),
       Product.countDocuments({ audience: 'men' }),
@@ -41,6 +46,7 @@ export async function GET() {
       categories,
       guides,
       submissions,
+      todayOrders,
       newSubmissions,
       activeTailoring,
       menCount,

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Users, Star } from 'lucide-react';
 import Img from './Img';
-import { audienceLabel, isFamilyAudience } from '@/lib/utils';
+import { isFamilyAudience } from '@/lib/utils';
 
 export default function ProductCard({ p }) {
   const isCombo = isFamilyAudience(p.audience) || p.groupMatching;
@@ -19,14 +19,8 @@ export default function ProductCard({ p }) {
             <Star size={12} fill="currentColor" /> Featured
           </span>
         ) : null}
-        {p.price && <span className="card-price-overlay">{p.price}</span>}
       </div>
       <h3>{p.name}</h3>
-      <p className="card-meta">
-        <span className="aud-txt">{audienceLabel(p.audience)}</span>
-        {p.category?.name ? ` • ${p.category.name}` : ''}
-      </p>
-      {p.fabric && <p className="card-fabric">{p.fabric}</p>}
     </Link>
   );
 }
