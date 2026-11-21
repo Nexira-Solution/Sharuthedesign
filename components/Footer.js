@@ -34,8 +34,9 @@ export default function Footer({ s = {} }) {
           {s.facebook && <a href={s.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>}
         </div>
       </div>
-      <div className="container">
+      <div className="container footer-bottom">
         <small>&copy; {new Date().getFullYear()} {s.storeName || 'Sharu The Design Studio'}. All rights reserved.</small>
+        <span className="footer-credit">Design and developed by <b>Nexira solutions </b></span>
       </div>
     </footer>
   );
