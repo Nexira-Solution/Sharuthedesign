@@ -20,7 +20,7 @@ export default function ProductCard({ p }) {
           </span>
         ) : null}
       </div>
-      <h3>{p.name}</h3>
+     
     </Link>
   );
 }

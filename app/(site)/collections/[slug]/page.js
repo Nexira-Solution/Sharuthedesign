@@ -1,16 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import {
-  Users,
-  Ruler,
-  MessageCircle,
-  Sparkles,
-  Palette,
-} from 'lucide-react';
+import { Playfair_Display, Inter } from 'next/font/google';
+import { Users, Ruler, MessageCircle, Sparkles, Palette, ArrowLeft } from 'lucide-react';
 import Gallery from '@/components/Gallery';
 import ProductCard from '@/components/ProductCard';
 import { getProduct, getProducts, getSettings } from '@/lib/data';
 import { audienceLabel, digits, isFamilyAudience } from '@/lib/utils';
+import css from './product.module.css';
+
+const display = Playfair_Display({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-display', display: 'swap' });
+const body = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
 
 export const dynamic = 'force-dynamic';
 
@@ -39,8 +38,8 @@ export default async function ProductPage({ params }) {
     getProducts({ audience: p.audience, limit: 5 }),
   ]);
   const rel = related.filter((r) => String(r._id) !== String(p._id)).slice(0, 4);
-
   const isCombo = isFamilyAudience(p.audience) || p.groupMatching;
+  const aud = isCombo ? 'family' : p.audience;
 
   const ld = {
     '@context': 'https://schema.org',
@@ -57,126 +56,108 @@ export default async function ProductPage({ params }) {
     },
   };
 
-  return (
+  const wa = s.whatsapp
+    ? `https://wa.me/${digits(s.whatsapp)}?text=${encodeURIComponent(`Hello Sharu Studio, I am interested in custom-tailoring: ${p.name}`)}`
+    : null;
+
+  const Actions = ({ bar }) => (
     <>
+      <Link href={`/measurements?audience=${aud}`} className={css.btn}>
+        <Ruler size={18} /> Send measurements
+      </Link>
+      {wa && (
+        <a className={`${css.btn} ${css.ghost}`} href={wa} target="_blank" rel="noopener noreferrer" aria-label="Ask on WhatsApp">
+          <MessageCircle size={18} /> {!bar && 'Ask on WhatsApp'}
+        </a>
+      )}
+    </>
+  );
+
+  return (
+    <main className={`${css.page} ${display.variable} ${body.variable}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
-      <section className="pd-section">
-        <div className="container pd">
-          {/* Minimal Luxury Gallery */}
-          <Gallery
-            images={p.images}
-            alt={p.name}
-            productName={p.name}
-          />
 
-          <div className="pd-details-col">
-            <div className="meta">
-              <span className="badge">{audienceLabel(p.audience)}</span>
-              {p.category && (
-                <Link className="badge" href={`/collections?category=${p.category.slug}`}>
-                  {p.category.name}
-                </Link>
-              )}
-              {isCombo && (
-                <span className="badge ok" style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <Users size={13} /> Family Combo
-                </span>
-              )}
-            </div>
+      <div className={`${css.wrap} ${css.backRow}`}>
+        <Link href={`/collections?audience=${aud}`} className={css.back} aria-label="Back to collections">
+          <ArrowLeft size={18} /> Back
+        </Link>
+      </div>
 
-            <h1>{p.name}</h1>
-
-            {p.description && <p className="desc">{p.description}</p>}
-
-            {/* If Family Combo with breakdown pieces */}
-            {p.comboPieces?.length > 0 && (
-              <div className="combo-breakdown-card">
-                <h4>
-                  <Users size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -1 }} />
-                  Coordinated Outfits Included:
-                </h4>
-                <ul>
-                  {p.comboPieces.map((piece, idx) => (
-                    <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {piece.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={piece.image}
-                          alt={piece.label || 'Outfit'}
-                          style={{ width: 34, height: 34, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--line)', flexShrink: 0 }}
-                        />
-                      )}
-                      <span>
-                        <strong>{piece.label}:</strong> {piece.garmentType} ({piece.audience})
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {(p.fabric || p.colors?.length > 0) && (
-              <dl>
-                {p.fabric && (
-                  <div>
-                    <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Sparkles size={13} /> Fabric
-                    </dt>
-                    <dd>{p.fabric}</dd>
-                  </div>
-                )}
-                {p.colors?.length > 0 && (
-                  <div>
-                    <dt style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Palette size={13} /> Colors
-                    </dt>
-                    <dd>{p.colors.join(', ')}</dd>
-                  </div>
-                )}
-              </dl>
-            )}
-
-            <div className="cta">
-              <Link
-                href={`/measurements?audience=${isCombo ? 'family' : p.audience}`}
-                className="btn"
-              >
-                <Ruler size={16} /> Send Measurements for this Piece
-              </Link>
-              {s.whatsapp && (
-                <a
-                  className="btn ghost"
-                  href={`https://wa.me/${digits(s.whatsapp)}?text=${encodeURIComponent(
-                    `Hello Sharu Studio, I am interested in custom-tailoring: ${p.name}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageCircle size={15} /> Ask on WhatsApp
-                </a>
-              )}
-            </div>
-          </div>
+      <div className={`${css.wrap} ${css.main}`}>
+        <div className={css.media}>
+          <Gallery images={p.images} alt={p.name} productName={p.name} />
         </div>
-      </section>
+
+        <div className={css.info}>
+          <div className={css.tags}>
+            <span className={css.tag}>{audienceLabel(p.audience)}</span>
+            {p.category && (
+              <Link className={css.tag} href={`/collections?category=${p.category.slug}`}>{p.category.name}</Link>
+            )}
+            {isCombo && (
+              <span className={`${css.tag} ${css.tagGold}`}><Users size={14} /> Family combo</span>
+            )}
+          </div>
+
+          <h1>{p.name}</h1>
+          {p.description && <p className={css.desc}>{p.description}</p>}
+
+          {(p.fabric || p.colors?.length > 0) && (
+            <dl className={css.specs}>
+              {p.fabric && (
+                <div className={css.spec}>
+                  <dt><Sparkles size={14} /> Fabric</dt>
+                  <dd>{p.fabric}</dd>
+                </div>
+              )}
+              {p.colors?.length > 0 && (
+                <div className={css.spec}>
+                  <dt><Palette size={14} /> Colors</dt>
+                  <dd>{p.colors.join(', ')}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+
+          {p.comboPieces?.length > 0 && (
+            <div className={css.combo}>
+              <h3>Outfits included</h3>
+              <ul>
+                {p.comboPieces.map((piece, i) => (
+                  <li key={i}>
+                    {piece.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={piece.image} alt={piece.label || 'Outfit'} />
+                    )}
+                    <div>
+                      <b>{piece.label}</b>
+                      <span>{piece.garmentType}{piece.audience ? `, ${piece.audience}` : ''}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className={css.cta}><Actions /></div>
+        </div>
+      </div>
+
+      <div className={css.bar}><Actions bar /></div>
 
       {rel.length > 0 && (
-        <section className="section soft">
-          <div className="container">
-            <div className="section-head">
+        <section className={css.related}>
+          <div className={css.wrap}>
+            <div className={css.rhead}>
               <h2>More in {audienceLabel(p.audience)}</h2>
-              <Link href={`/collections?audience=${isCombo ? 'family' : p.audience}`} className="btn ghost sm">
-                View all
-              </Link>
+              <Link href={`/collections?audience=${aud}`} className={`${css.btn} ${css.ghost}`}>View all</Link>
             </div>
-            <div className="prod-grid">
-              {rel.map((r) => (
-                <ProductCard key={r._id} p={r} />
-              ))}
+            <div className={css.grid}>
+              {rel.map((r) => (<ProductCard key={r._id} p={r} />))}
             </div>
           </div>
         </section>
       )}
-    </>
+    </main>
   );
 }
