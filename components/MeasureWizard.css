@@ -1,7 +1,8 @@
 /* Measure wizard – "tailor's slate" layout.
    Plain stylesheet with mw- prefixed classes; imported by MeasureWizard.jsx.
-   One bold idea: the entry panel is a dark slate with a ruler under the number. */
-.mw-root{--b:#10213f;--b2:#1b315c;--w:#fff;--g1:#f3f5f8;--g2:#d3d9e4;--g3:#58637b;--gold:#c29a4b;--gold2:#8a6420;--err:#b3261e;
+   One bold idea: the entry panel is a dark slate with a ruler under the number.
+   Colors come from --t-* variables (set by <ThemeVars /> from Admin > Site settings). */
+.mw-root{--b:var(--t-dark,#5a1e2a);--b2:color-mix(in srgb,var(--b) 82%,#fff);--w:var(--t-card,#fffaf5);--g1:var(--t-bg,#f7e6d8);--g2:color-mix(in srgb,var(--b) 20%,var(--g1));--g3:color-mix(in srgb,var(--b) 72%,var(--g1));--gold:var(--t-accent,#c9a24b);--gold2:var(--t-accent-text,#8a6a4f);--err:#b3261e;
   color:var(--b);min-width:0;max-width:100%;overflow-x:clip}
 .mw-root *{box-sizing:border-box}
 .mw-root h2,.mw-root h3,.mw-root h4{font-family:var(--font-display),Georgia,serif;font-weight:600;margin:0;letter-spacing:-.015em}
@@ -27,7 +28,7 @@ button.mw-tab{cursor:pointer}
 .mw-tab:disabled{cursor:default}
 .mw-tabOn{background:var(--b);color:var(--w)}
 .mw-tabOn i{background:var(--gold);color:var(--b)}
-.mw-tabDone{background:#f1e6cd;color:var(--b)}
+.mw-tabDone{background:color-mix(in srgb,var(--gold) 28%,var(--w));color:var(--b)}
 .mw-tabDone i{background:var(--gold);color:var(--b)}
 .mw-track{height:10px;border-radius:3px;background:var(--g1);overflow:hidden;
   background-image:repeating-linear-gradient(90deg,transparent 0 9px,var(--g2) 9px 10px)}
@@ -39,9 +40,10 @@ button.mw-tab{cursor:pointer}
 /* stage 1: tiles on phones, staggered arches on desktop */
 .mw-audGrid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:22px}
 .mw-aud{background:var(--g1);border:0;border-radius:20px;padding:10px;cursor:pointer;display:grid;grid-template-columns:92px 1fr;column-gap:16px;align-items:center;text-align:left;transition:background .2s}
-.mw-aud:hover{background:#ece3cf}
+.mw-aud:hover{background:color-mix(in srgb,var(--gold) 22%,var(--g1))}
 .mw-audPic{grid-row:1/4;position:relative;aspect-ratio:3/4;border-radius:999px 999px 12px 12px;overflow:hidden;background:var(--g2)}
-.mw-audPic img{width:100%;height:100%;object-fit:cover;display:block}
+/* contain = the whole photo is visible, never cropped */
+.mw-audPic img{width:100%;height:100%;object-fit:contain;display:block}
 .mw-audBadge{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--b);display:grid;place-items:center}
 .mw-aud h3{font-size:22px;align-self:end}
 .mw-aud span{font-size:14px;color:var(--gold2);font-weight:600;align-self:start;margin-top:2px}
@@ -76,7 +78,7 @@ button.mw-tab{cursor:pointer}
 .mw-bigRow::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;
   background:
     repeating-linear-gradient(90deg,var(--gold) 0 2px,transparent 2px 50px) left bottom/100% 18px no-repeat,
-    repeating-linear-gradient(90deg,rgba(194,154,75,.7) 0 1.5px,transparent 1.5px 10px) left bottom/100% 9px no-repeat}
+    repeating-linear-gradient(90deg,color-mix(in srgb,var(--gold) 70%,transparent) 0 1.5px,transparent 1.5px 10px) left bottom/100% 9px no-repeat}
 .mw-bigRow:focus-within::after{filter:brightness(1.25)}
 .mw-bigInput{flex:1;min-width:0;width:100%;border:0;background:transparent;font-family:var(--font-display),Georgia,serif;font-size:clamp(48px,16vw,72px);font-weight:600;color:var(--w);padding:0;line-height:1.1}
 .mw-bigInput::placeholder{color:rgba(255,255,255,.35)}

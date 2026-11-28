@@ -1,0 +1,23 @@
+.nav { --nav-solid: #5a1e2a; left: 0; right: 0; top: 0; z-index: 50; color: #fff; transition: background 0.25s; background: transparent; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+.solid { background: var(--nav-solid); }
+.in { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px clamp(20px, 6vw, 90px); }
+.logo img { height: 52px; width: auto; display: block; }
+.links { display: flex; gap: clamp(14px, 2vw, 30px); font-size: 0.78rem; }
+.links a { color: #fff; text-decoration: none; padding-bottom: 4px; border-bottom: 1px solid transparent; }
+.links a:hover, .active { border-bottom-color: #fff !important; }
+.cta {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px; color: #fff; text-decoration: none; font-size: 0.78rem; white-space: nowrap;
+}
+.cta:hover { background: rgba(255, 255, 255, 0.14); }
+.burger { display: none; background: none; border: 0; color: #fff; cursor: pointer; }
+.mobile { overflow: hidden; background: var(--nav-solid); }
+.mobileIn { display: grid; gap: 14px; padding: 8px 24px 22px; }
+.mobileIn a { color: #fff; text-decoration: none; }
+.mobileIn .cta { justify-self: start; }
+@media (max-width: 960px) {
+  .links, .in > .cta { display: none; }
+  .burger { display: block; }
+}

@@ -1,4 +1,4 @@
-.page{--b:#10213f;--w:#fff;--g1:#f3f5f8;--g2:#d3d9e4;--g3:#58637b;--gold:#c29a4b;--gold2:#8a6420;
+.page{--b:var(--t-dark,#5a1e2a);--w:var(--t-card,#fffaf5);--g1:var(--t-bg,#f7e6d8);--g2:color-mix(in srgb,var(--b) 20%,var(--g1));--g3:color-mix(in srgb,var(--b) 72%,var(--g1));--gold:var(--t-accent,#c9a24b);--gold2:var(--t-accent-text,#8a6a4f);
   background:var(--g1);color:var(--b);font-family:var(--font-body),system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
 .page h1,.page h3{font-family:var(--font-display),Georgia,serif;font-weight:600;margin:0;letter-spacing:-.015em}
 .page a{color:inherit;text-decoration:none}

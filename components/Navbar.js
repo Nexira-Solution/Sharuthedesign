@@ -3,79 +3,66 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Ruler, Menu, X } from 'lucide-react';
+import { CalendarDays, Menu, X } from 'lucide-react';
+import css from './Navbar.module.css';
 
-const links = [
-  ['/', 'Home'],
-  ['/collections', 'Collections'],
-  // ['/track', 'Track Order'],
-  ['/#visit', 'Visit Studio'],
+const FALLBACK = [
+  { label: 'Home', href: '/' },
+  { label: 'About Us', href: '/#about' },
+  { label: 'Our Creations', href: '/collections' },
+  // { label: 'Gallery', href: '/gallery' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
-export default function Navbar({ name = 'Sharu' }) {
+// Usage in layout:  <Navbar name={s.storeName} s={s} />
+export default function Navbar({ name = 'Sharu', s = {} }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const path = usePathname();
+  const isHome = path === '/';
+
+  const links = s.navLinks?.length ? s.navLinks : FALLBACK;
+  const bookHref = s.bookHref || '/measurements';
+  const bookText = s.bookText || 'Give Your Measurement';
 
   useEffect(() => {
-    const handleScroll = () => {
-      const top = window.scrollY || document.documentElement.scrollTop || 0;
-      setScrolled(top > 10);
-    };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const on = () => setScrolled((window.scrollY || 0) > 10);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
   }, []);
-
   useEffect(() => setOpen(false), [path]);
 
+  const solid = !isHome || scrolled || open;
+  const style = s.colorDark ? { '--nav-solid': s.colorDark } : undefined;
+
   return (
-    <header className={`nav ${scrolled ? 'scrolled' : ''}`}>
-      <div className="container nav-in">
-        <Link href="/" className="nav-logo" aria-label={name}>
+    <header className={`${css.nav} ${isHome ? css.fixed : css.sticky} ${solid ? css.solid : ''}`} style={style}>
+      <div className={css.in}>
+        <Link href="/" className={css.logo} aria-label={name}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-dark.png" alt={name} />
+          <img src="/logo-light.png" alt={name} />
         </Link>
 
-        <nav className="nav-links" aria-label="Main">
-          {links.map(([h, l]) => (
-            <Link key={h} href={h} className={path === h ? 'active' : ''}>
-              {l}
-            </Link>
+        <nav className={css.links} aria-label="Main">
+          {links.map((l, i) => (
+            <Link key={i} href={l.href || '/'} className={path === l.href ? css.active : ''}>{l.label}</Link>
           ))}
-          <Link href="/measurements" className="btn sm nav-cta-btn">
-            <Ruler size={14} /> Send Measurements
-          </Link>
         </nav>
 
-        <button
-          className="nav-burger-btn"
-          onClick={() => setOpen(!open)}
-          aria-label={open ? 'Close Menu' : 'Open Menu'}
-          aria-expanded={open}
-        >
+        <Link href={bookHref} className={css.cta}><CalendarDays size={14} /> {bookText}</Link>
+
+        <button className={css.burger} onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}>
           {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       <AnimatePresence>
         {open && (
-          <motion.div
-            className="nav-mobile"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <div className="nav-mobile-inner">
-              {links.map(([h, l]) => (
-                <Link key={h + l} href={h} className={path === h ? 'active' : ''}>
-                  {l}
-                </Link>
-              ))}
-              <Link href="/measurements" className="btn nav-mobile-cta">
-                <Ruler size={16} /> Send My Measurements
-              </Link>
+          <motion.div className={css.mobile} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
+            <div className={css.mobileIn}>
+              {links.map((l, i) => (<Link key={i} href={l.href || '/'}>{l.label}</Link>))}
+              <Link href={bookHref} className={css.cta}><CalendarDays size={14} /> {bookText}</Link>
             </div>
           </motion.div>
         )}

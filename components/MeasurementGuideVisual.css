@@ -1,15 +1,17 @@
-.mgv-wrap{display:grid;gap:10px;min-width:0;color:#10213f}
-.mgv-stage{background:#fff;border-radius:16px;overflow:hidden;display:grid;place-items:center}
+/* Colors come from --t-* variables (set by <ThemeVars />); fallbacks = new maroon/cream theme */
+.mgv-wrap{--d:var(--t-dark,#5a1e2a);--c:var(--t-card,#fffaf5);--bg:var(--t-bg,#f7e6d8);--a:var(--t-accent,#c9a24b);--a2:var(--t-accent-text,#8a6a4f);
+  display:grid;gap:10px;min-width:0;color:var(--d)}
+.mgv-stage{background:var(--c);border-radius:16px;overflow:hidden;display:grid;place-items:center}
 .mgv-svg{display:block;width:100%;height:auto;max-height:min(62vh,520px);margin-inline:auto}
 .mgv-photo{display:block;width:100%;height:auto;max-height:min(62vh,520px);object-fit:contain}
 .mgv-meta{display:grid;gap:8px}
 .mgv-range,.mgv-tip{margin:0;display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.5;padding:10px 12px;border-radius:12px}
-.mgv-range{background:#10213f;color:#fff;align-items:center;flex-wrap:wrap}
-.mgv-range svg{color:#c29a4b;flex-shrink:0}
-.mgv-range span{color:#d3d9e4}
-.mgv-range b{margin-left:auto;color:#c29a4b;font-weight:600}
-.mgv-tip{background:#f1e6cd;color:#10213f}
-.mgv-tip svg{flex-shrink:0;margin-top:2px;color:#8a6420}
+.mgv-range{background:var(--d);color:#fff;align-items:center;flex-wrap:wrap}
+.mgv-range svg{color:var(--a);flex-shrink:0}
+.mgv-range span{color:color-mix(in srgb,var(--d) 20%,var(--bg))}
+.mgv-range b{margin-left:auto;color:var(--a);font-weight:600}
+.mgv-tip{background:color-mix(in srgb,var(--a) 28%,var(--c));color:var(--d)}
+.mgv-tip svg{flex-shrink:0;margin-top:2px;color:var(--a2)}
 
 /* short phones: keep the diagram from pushing the input off-screen */
 @media (max-width:639px){
